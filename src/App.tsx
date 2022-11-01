@@ -1,26 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import "./App.css";
+import axios from "axios";
+import PokemonCollection from "./components/PokemonCollection";
+import { Pokemon } from "./interface";
 
-function App() {
+interface Pokemons {
+  name: string;
+  url: string;
+}
+
+const App: React.FC = () => {
+  //pokemonを配列で保持
+  const [pokemons, setPokemons] = useState<Pokemon[]>([]);
+  //axiosで取得したデータを一度だけとる
+  useEffect(() => {
+    //非同期処理
+    const getpokemon = async () => {
+      const res = await axios.get(
+        "https://pokeapi.co/api/v2/pokemon?limit-20&offset-20"
+      );
+      res.data.results.forEach(async (pokemon: Pokemons) => {
+        const poke = await axios.get(
+          `https://pokeapi.co/api/v2/pokemon/${pokemon.name}`
+        );
+        setPokemons((p) => [...p, poke.data]);
+      });
+    };
+    getpokemon();
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="container">
+        <header className="pokemon-header"> Pokemon</header>
+        <PokemonCollection pokemons={pokemons} />
+      </div>
     </div>
   );
-}
+};
 
 export default App;
